@@ -27,7 +27,7 @@ billb <- read_csv("billboard.csv")
 
 ## Part A
 ```{r}
-ggplot(profs) + geom_histogram(aes(x=eval))
+ggplot(profs) + geom_histogram(aes(x=eval)) + theme_classic()
 ```
 
 This histogram shows the distribution of course evaluation scores
@@ -36,7 +36,7 @@ The distribution seems to be skewed towards 4 out of 5 points, meaning that a lo
 
 ## Part B
 ```{r}
-ggplot(profs) + geom_boxplot(aes(x=eval)) + facet_wrap(~native)
+ggplot(profs) + geom_boxplot(aes(x=eval)) + facet_wrap(~native) + theme_classic()
 ```
 
 Distriution of course evaluation scores (eval) among professors who are native or non-native English speakers
@@ -45,7 +45,7 @@ According to the box plots, the distribution of ratings among professors who are
 
 ## Part C
 ```{r}
-ggplot(profs) + geom_histogram(aes(x=eval)) + facet_wrap(~gender)
+ggplot(profs) + geom_histogram(aes(x=eval)) + facet_wrap(~gender) + theme_classic()
 ```
 
 Distribution of course evaluation scores (eval) among female and male professors
@@ -54,7 +54,7 @@ According to the two histograms, the distribution of course evaluations among fe
 
 ## Part D
 ```{r}
-ggplot(profs) + geom_jitter(aes(x=beauty, y = eval))
+ggplot(profs) + geom_jitter(aes(x=beauty, y = eval)) + theme_classic()
 ```
 
 Relationship between beauty and the evaluations core of professors (eval)
@@ -66,7 +66,7 @@ This suggests that there is some positive relationship between beauty and course
 
 ## Plot A
 ```{r}
-ggplot(bikes) + geom_line(aes(x=hr, y = total))
+ggplot(bikes) + geom_line(aes(x=hr, y = total)) + theme_classic()
 ```
 
 The number of bike rentals across different hours of the day
@@ -75,7 +75,7 @@ This line graph shows that in the early hours (hr) of the day, there are not a l
 
 ## Plot B
 ```{r}
-ggplot(bikes) + geom_line(aes(x=hr, y = total)) + facet_wrap(~workingday)
+ggplot(bikes) + geom_line(aes(x=hr, y = total)) + facet_wrap(~workingday) + theme_classic()
 ```
 
 The total number of bike rentals durign the differnet hours of the day according to if it is a weekday or weekend.
@@ -85,7 +85,7 @@ Among weekdays (1) and weekends (0), the relationship between the hour of the da
 ## Plot C
 ```{r}
 nine_am = filter(bikes, hr == 9)
-ggplot(nine_am) + geom_col(aes(x = weathersit, y = total)) + facet_wrap(~workingday)
+ggplot(nine_am) + geom_col(aes(x = weathersit, y = total)) + facet_wrap(~workingday) + theme_classic()
 ```
 
 The number of bike rentals during the different weather conditions (1, 2, 3)
@@ -105,7 +105,7 @@ levels=c("Sep", "Oct","Nov")))
 
 ## Part 1
 ```{r}
-ggplot(capmetro_UT) + geom_line(aes(x = hour_of_day, y = boarding, color = month)) + facet_wrap(~day_of_week)
+ggplot(capmetro_UT) + geom_line(aes(x = hour_of_day, y = boarding, color = month)) + facet_wrap(~day_of_week) + theme_classic()
 ```
 
 Average boardings among September, October, and November by day of the week. 
@@ -114,7 +114,7 @@ The hour of peak boardings is usually between 3 and 5 pm (15 and 17), meaning th
 
 ## Part 2
 ```{r}
-ggplot(capmetro_UT) + geom_jitter(aes(x = temperature, y = boarding, color = weekend)) + facet_wrap(~hour_of_day)
+ggplot(capmetro_UT) + geom_jitter(aes(x = temperature, y = boarding, color = weekend)) + facet_wrap(~hour_of_day) + theme_classic()
 ```
 
 The scatter plot shows the the number of boardings during the weekdays or weekends among the hour of the day at different temperatures.
@@ -144,7 +144,7 @@ top100_unique <- unique(top_100)
 diversity <- top100_unique %>%
   group_by(year) %>%
   summarize(unique_songs = n())
-ggplot(diversity) + geom_line(aes(x = year, y = unique_songs))
+ggplot(diversity) + geom_line(aes(x = year, y = unique_songs)) + theme_classic()
 ```
 
 Number of unique songs appearing at any position on the Billboard Top 100 chart in any week in a year. 
@@ -156,9 +156,9 @@ According to this line graph, the number of unique songs on the Billboard Top 10
 top_artists <- billb %>%
   filter(weeks_on_chart >= 10) %>%
   group_by(performer) %>%         
-  summarize(ten_week_hits = n_distinct(song)) 
-  filter(ten_week_hits >= 30) %>% 
-  arrange(desc(ten_week_hits))    
+  summarize(ten_week_hits = n_distinct(song))
+top_artists <- filter(top_artists, ten_week_hits >= 30) 
+table <- arrange(top_artists, desc(ten_week_hits))    
 
 ggplot(top_artists) +
   geom_bar(aes(x = performer, y = ten_week_hits), stat = "identity", fill = "steelblue") +
@@ -169,7 +169,6 @@ ggplot(top_artists) +
     y = "Number of Ten-Week Hits"
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 ```
 
 The number of ten-week hits among the artists with at least 30 ten-week hits
