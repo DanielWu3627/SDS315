@@ -107,7 +107,8 @@ levels=c("Sep", "Oct","Nov")))
 ```{r}
 ggplot(capmetro_UT) + geom_line(aes(x = hour_of_day, y = boarding, color = month)) + facet_wrap(~day_of_week)
 ```
-Average boarding among September, October, and November by day of the week. 
+
+Average boardings among September, October, and November by day of the week. 
 
 The hour of peak boardings is usually between 3 and 5 pm (15 and 17), meaning that routine travel patterns (eg. school/work-related travel) peak at those hours. In September, some regions have holidays (eg. Labor Day), which potentially reduces Monday traveling. In November, average boardings seem lower on Wednesdays, Thursdays, and Fridays due to Thanksgiving, which can lead to reduced local commuting.
 
@@ -132,7 +133,7 @@ billb %>%
   head(10)
 ```
 
-This table shows the top 10 songs on Billboard Top 100
+This table shows the top 10 songs on Billboard Top 100.
 
 
 ## Part B
@@ -148,19 +149,16 @@ ggplot(diversity) + geom_line(aes(x = year, y = unique_songs))
 
 Number of unique songs appearing at any position on the Billboard Top 100 chart in any week in a year. 
 
-According to this line graph, the number of unique songs on the Billboard Top 100 peaked in the mid-1960s, and then rapidly declined unill around 2003. Then, it started to rapidly increase again, reachin a level near the mid-60s peak in 2020.
+According to this line graph, the number of unique songs on the Billboard Top 100 peaked in the mid-1960s, and then rapidly declined until around 2003. Then, it started to rapidly increase again, reaching a level near the mid-60s peak in 2020.
 
 ## Part C
 ```{r}
-ten_week_hits <- filter(billb, weeks_on_chart >= 10)
-
-artist_ten_week_hits <- aggregate(ten_week_hits$song ~ ten_week_hits$performer, FUN = function(x) length(unique(x)))
-
-colnames(artist_ten_week_hits) <- c("performer", "ten_week_hits")
-
-ten_week_hits <- filter(artist_ten_week_hits, ten_week_hits >= 30)
-
-top_artists <- arrange(ten_week_hits, desc(ten_week_hits))
+top_artists <- billb %>%
+  filter(weeks_on_chart >= 10) %>%
+  group_by(performer) %>%         
+  summarize(ten_week_hits = n_distinct(song)) 
+  filter(ten_week_hits >= 30) %>% 
+  arrange(desc(ten_week_hits))    
 
 ggplot(top_artists) +
   geom_bar(aes(x = performer, y = ten_week_hits), stat = "identity", fill = "steelblue") +
