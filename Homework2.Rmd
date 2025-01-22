@@ -96,14 +96,14 @@ This line graph shows that in the early hours (hr) of the day, there are not a l
 working <- group_by(bikes, hr, workingday) %>%
   summarize(avg_rentals = mean(total))
 ggplot(working) + geom_line(aes(x=hr, y = avg_rentals)) + facet_wrap(~workingday) + theme_classic() + labs(
-    title = "Total Number of Bike Rentals Throughout Different Hours of the Day Among Weekdays or Weekends",
+    title = "Average Number of Bike Rentals Throughout Different Hours of the Day Among Weekdays or Weekends",
     x = "Hour of the Day",
     y = "Average Number of Rentals")
 ```
 
-The total number of bike rentals during the different hours of the day according to if it is a weekday or weekend.
+The average number of bike rentals during the different hours of the day according to if it is a weekday or weekend.
 
-During the weekends or holidays (0), not a lot of people rent bikes during the very early hours of the day, but at around 7 or 8 am, the avergae numbers rapidly increase, reaching a peak at around 11 am. However, at around 5 pm, the average numbers sharply decrease again. This shows that whenever it is not a working day, some people tend to rent bikes to pass free time. During the weekdays (1), at around 8 am, the average number of rentals rise rapidly until it reaches a peak at around 9 am, and then it decreases rapidly. At around 5 pm, the number of rentals rises rapidly again until a new peak is reached, and then it decreases after around 6 pm.
+During the weekends or holidays (0), not a lot of people rent bikes during the very early hours of the day, but at around 7 or 8 am, the average numbers rapidly increase, reaching a peak at around 11 am. However, at around 5 pm, the average numbers sharply decrease again. This shows that whenever it is not a working day, some people tend to rent bikes to pass free time. During the weekdays (1), at around 8 am, the average number of rentals rise rapidly until it reaches a peak at around 9 am, and then it decreases rapidly. At around 5 pm, the average number of rentals rises rapidly again until a new peak is reached, and then it decreases after around 6 pm.
 
 ## Plot C
 ```{r}
@@ -201,8 +201,7 @@ ggplot(top_artists) +
     title = "Artists with at Least 30 Ten-Week Hits",
     x = "Artist",
     y = "Number of Ten-Week Hits"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  ) + coord_flip()
 ```
 
 The number of ten-week hits among the artists with at least 30 ten-week hits
