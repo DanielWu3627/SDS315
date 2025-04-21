@@ -1,0 +1,126 @@
+---
+title: "Homework9"
+author: "Daniel Wu (EID: djw3627)"
+date: "2025-04-21"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+To access my GitHub repository, click here: [https://github.com/DanielWu3627/SDS315](https://github.com/DanielWu3627/SDS315). Please check the file named **Homework9.Rmd**.
+
+```{r}
+library(ggplot2)
+library(mosaic)
+library(tidyverse)
+library(mosaic)
+library(moderndive)
+library(effectsize)
+setwd("/Users/danielwu/Documents/Study/SDS 315")
+sold <- read.csv("solder.csv")
+stores <- read.csv("groceries.csv")
+```
+
+# Problem 1
+
+## Part A
+```{r}
+ggplot(sold) + geom_boxplot(aes(x=Opening, y=skips, fill=Opening)) + labs(title="Number of skips among solder guns with different opening sizes") + theme(title = element_text(size = 8))
+```
+
+According to the box plot, the plot showing the guns with large openings has a very low median, and most values are tightly clustered near 0-3 skips. In the plot showing the guns with medium-sized openings, the median is slightly higher than L, and there is more variation, shown by a wider spread. There are more outliers than L, going up to about 25 skips. The plot showing guns with small openings has the highest median (around 7-8). Additionally the spread is very wide, with many outliers, with some as hgih as around 47-48 steps.This suggest that guns with larger opening have fewer skips with less variation and those with smaller openings have more skips with greater variability.
+
+```{r}
+ggplot(sold) + geom_boxplot(aes(x=Solder, y=skips, fill=Solder)) + labs(title="Number of skips among solder guns with thick vs thin alloy")
+```
+
+According to the box plot, the plot showing the guns with thick alloy has a very small median (around 1) and most values are clustered between 0 and 4 skips. In the plot showing solder guns with thin alloy, the number of skips are more spread out, with the median also greater (around 4). Additionally, there are more outliers, with some as high as 47-48 skips. Therefore, there is a clear pattern that thin guns produce more skips and have a wide spread while thick guns keep skips low and tightly clustered around 0.
+
+## Part B
+```{r}
+model_sold <- lm(skips ~ Opening + Solder + Opening:Solder, data = sold)
+
+get_regression_table(model_sold)
+```
+
+## Part C
+The baseline number of skips of guns with large openings and thick alloy is 0.39. 
+
+The main effect for the OpeningM variable is 2.41. This is the effect of OpeningM in isolation, meaning the number of skips for medium-sized opening is 2.41 more than large openings. The 95% CI is [0.96, 3.85], which does not include 0, so the effect is statistically significant.
+
+The main effect for the OpeningS variable is 5.13. This is the effect of OpeningS in isolation, meaning the number of skips for small-sized opening is 5.13 more than large openings. The 95% CI is [3.68, 6.57], which does not include 0, so the effect is statistically significant.
+
+The main effect for the SolderThin variable is 2.28. This is the effect of SolderThin in isolation, meaning the number of skips for guns with thin alloy is 2.28 more than thick alloy. The 95% CI is [0.84, 3.72], which does not include 0, so the effect is statistically significant.
+
+The interaction effect for OpeningM and SolderThin is -0.74. In other words, guns with a medium-sized opening and thin alloy yield 0.74 less skips when compared to the summation of the “isolated” effects of the two variables (medium-sized opening and thin alloy). The 95% CI is [-2.78, 1.30], which includes 0, so the effect is not statistically significant.
+
+The interaction effect for OpeningS and SolderThin is 9.65. In other words, guns with a small-sized opening and thin alloy yield 9.65 more skips when compared to the summation of the “isolated” effects of the two variables (small-sized opening and thin alloy). The 95% CI is [7.61, 11.70], which does not include 0, so the effect is statistically significant.
+
+## Part D
+I would recommend a combination of a large opening size and thick alloy to AT&T. Based on the regression analysis, the baseline (large opening + thick solder) told me that there were 0.39 skips for large openings and thick solders. Every other combination is associated with more skips.
+
+# Problem 2
+
+## Part A
+```{r}
+prices <- stores %>%
+  group_by(Store) %>%
+  summarise(price = mean(Price))
+ggplot(prices) + geom_col(aes(x=Store, y = price)) + coord_flip() + labs(title = "Average price of items across different stores")
+```
+
+Based on the plot, we can see that Fiesta has the lowest average price of items, while Whole Foods has the highest average price of items.
+
+## Part B
+```{r, fig.width=12, fig.height=16}
+products <- stores %>%
+  group_by(Product) %>%
+  summarise(number = n())
+ggplot(products) + geom_col(aes(x=Product, y = number)) + coord_flip() + labs(title = "Number of stores selling each product", y = "Number of stores") + theme(axis.text.y = element_text(size = 20), title = element_text(size = 20))
+```
+
+## Part C
+```{r}
+price <- lm(Price ~ Product + Type, data=stores)
+get_regression_table(price, digits = 2)
+```
+
+Compared with ordinary grocery stores, at the 95% confidence level, convenience stores charge somewhere betwen [0.41, 0.92] dollars more for the same product. The estimated difference between the two types of stores is 0.66 dollars for the same product.
+
+# Part D
+```{r}
+price <- lm(Price ~ Product + Store, data=stores)
+price_com <- get_regression_table(price, digits = 2)
+price_com %>%
+  arrange(estimate)
+```
+
+The two stores that charge the lowest prices when comparing the same product are Walmart (estimate is 0.99 dollars less than Albertsons) and Kroger Fresh Fare (estimate is 0.90 dollars less than Albertsons). The two stores that charge the highest prices are Wheatsville Food Co-Op (estimate is 0.29 dollars more than Albertsons) and Whole Foods (estimate is 0.36 dollars more than Albertsons).
+
+# Part E
+Central Market charges more than HEB for the same product. Central Market has an estimate of -0.57, and HEB has an estimate of -0.65. -0.57 - (-0.65) = 0.08. This means Central Market charges about 0.08 more than HEB. The upper bound for the 95% confidence interval is -0.23 - (-0.35) = 0.12 and the lower bound is -0.92 - (-0.95) = 0.03. This means that Central Market charges somewhere between 0.03 and 0.12 dollars more than HEB for the same product.
+
+# Part F
+```{r}
+income <- stores %>%
+  mutate(Income10K = Income/10000)
+price <- lm(Price ~ Product + Income10K, data=income)
+get_regression_table(price)
+standardize_parameters(price)
+```
+Based on the sign of the 10K coefficient, consumers in poorer zip codes seem to pay more for the same product on average. Based on the coefficient estimate of -0.014, for every 10,000 dollar increase in income the average price paid seemed to decrease by approximately 0.01 dollars. However, the 95% confidence interval is [-0.033, 0.005], which passes 0, so if we were to generalize to a different sample, there might be no statistically significant relationship.
+
+A one-standard deviation increase in the income of a ZIP code seems to be associated with a -0.03 standard-deviation change in the price that consumers in that ZIP code expect to pay for the same product.
+
+# Problem 3
+A. True. Accordign to Figure A1 and Model A, there is a significant relationship between % minority and FAIR policies per 100 housing units (p<0.001; R^2 = 0.516). For every 1% increase in minority population, there is a 0.014 increease in FAIR policies. 
+
+B. Undecidable. There is no model explicitely showing any interaction effect between minority percentage and the age of the housing stock in the way that these two variables are related to the number of FAIR policies in a ZIP code. Figure B1 shows a weak (R^2=0.06) and not statistically significant relationshp between housing age and % minority (p=0.125). If we have a model that includes both minority and age and their interaction, we can determine whether there is an interaction effect between between age and miniority based on the 95% confidence interval of the coefficient for the interaction term is not statistically significant (p=0.143).
+
+C. False. Figure C1 shows that the red line (high fire risk) has a slightly steeper slope than the blue line (low fire risk). However, the p-value of the association between minority % and FAIR policies from Model C is 0.839. Therefore, the interaction effect is not statistically significant because of the high p-value. Therefore, we can only say that there is no significant difference in the relationship between minority % and number of FAIR policies among high vs. low fire risk ZIP codes.
+
+D. False. Model D1 shows the relationship between FAIR policies and % minority alone (coefficient is 0.014, p<0.001). Even after controlling for income in Model D2, the p-value of the association between minority percentage and FAIR policy uptake is still statistically significant (p=0.002). Income does not explain away the relationship between minority % and FAIR policies. The association persists with statistical significance.
+
+E. True. In Model E, the relationship between minority and FAIR policies is statistically significant (coefficient is 0.008, p=0.006) even after controlling for income, fire, and age. R^2 is 0.662, meanign the model has good explanatory power.
