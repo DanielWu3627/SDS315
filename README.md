@@ -5,7 +5,7 @@ This project is built using Python and Jupyter Notebook. To run it successfully,
 ### ✅ Recommended: Set up a virtual environment
 
 ```         
-python -m venv venv source venv/bin/activate \# or venv\Scripts\activate on Windows
+python -m venv venv
 
 # Activate it
 # On Windows:
@@ -21,6 +21,8 @@ If you haven't already, install Jupyter Notebook:
 ```         
 pip install notebook
 ```
+
+Make sure you add the notebook directory to your system's PATH.
 
 ### Step 2: Install Required Libraries
 
