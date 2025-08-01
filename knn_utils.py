@@ -5,7 +5,7 @@ from sklearn.model_selection import LeaveOneOut, GridSearchCV, StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier  # KNN model
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, roc_auc_score, roc_curve, auc  
 from sklearn.preprocessing import label_binarize
-
+import ipywidgets as widgets
 from ipywidgets import IntSlider, Dropdown, Button, HBox, VBox, Label, Layout   # For UI Control
 from IPython.display import display, clear_output, HTML
 import io  # Provides tools for handling input/output
@@ -17,6 +17,30 @@ import time
   
 
 ################################ Shared Helper Functions #######################################################
+# This function takes the file name obtained from file uploader widget and gets the data.
+def get_file_content(uploader, drop_columns=['NAME', 'CLASS'], label_column='CLASS'):
+    if not uploader.value:
+        print("⚠️ No file uploaded. Please choose the input file and re-run the code above.") 
+        return None, None, None
+    
+    value = uploader.value
+    if isinstance(value, dict):
+        uploaded_file = list(value.values())[0]
+    elif isinstance(value, (list, tuple)):
+        uploaded_file = value[0]
+    else:
+        print("Unsupported uploader value format.")
+        return None, None, None
+
+    content = uploaded_file['content']
+    file_name = uploaded_file['name']
+    data = pd.read_csv(io.BytesIO(content))
+
+    X = data.drop(columns=drop_columns)
+    y = data[label_column]
+    return X, y, file_name
+
+
 # Customized function for calculating weights
 def compute_weights(weight, dist = None, for_sklearn = False):
     if for_sklearn:
@@ -237,6 +261,33 @@ def plot_items_scores(title):
    
     
 ####################################### Functions Unique to the Grid Search ################################################
+# Creates the file uploader widget
+def create_widgets_grid():
+    uploader = widgets.FileUpload(accept='.csv', multiple=False, description="Upload File")
+    accuracy_button = widgets.Button(description='Grid Search (default)', button_style='success')
+    roc_button = widgets.Button(description='Grid Search (ROC)', button_style='info')
+    output = widgets.Output()
+    return uploader, accuracy_button, roc_button, output
+
+# Event handler that responds to button clicking
+def bind_callbacks(accuracy_button, roc_button, uploader, output):
+    def on_accuracy_clicked(b):  
+        with output:
+            output.clear_output()
+            X, y, file_name = get_file_content(uploader)
+            if X is not None:
+                run_grid_accuracy(X, y, metric="euclidean", weights="one", file=file_name)
+
+    def on_roc_clicked(b):
+        with output:
+            output.clear_output()
+            X, y, file_name = get_file_content(uploader)
+            if X is not None:
+                run_grid_roc(X, y, metric="euclidean", weights="one", file=file_name)
+
+    accuracy_button.on_click(on_accuracy_clicked)
+    roc_button.on_click(on_roc_clicked)
+
 # This function performs grid search over a range of K values (1 to 20) for a KNN classifier using Leave-One-Out Cross-Validation (LOOCV).
 # It searches for the optimal number of neighbors (k) that optimizes for the overall accuracy.
 
@@ -436,6 +487,76 @@ def evaluate_final(X, y, k, metric, weights, class_names):
 
 
 ############################################# Functions Unique to the Notebook Requiring User Inputs ################
+# Creates UI widgets for users to import file, select K, distance, weight, and CV method
+def create_widgets_ui():
+    uploader = widgets.FileUpload(accept='.csv', multiple=False, description="Upload File")
+
+    k_widget = widgets.BoundedIntText(
+        min=1, max=20, value=5,
+        description='Number of nearest neighbors (K):',
+        style={'description_width': 'initial'}
+    )
+
+    metric_widget = widgets.Dropdown(
+        options=['euclidean', 'manhattan', 'chebyshev'],
+        description='Distance Metric:',
+        style={'description_width': 'initial'}
+    )
+
+    weights_widget = widgets.Dropdown(
+        options=['one', 'inverse', 'inversesquare'],
+        description='Weight Function:',
+        style={'description_width': 'initial'}
+    )
+
+    cv_widget = widgets.Dropdown(
+        options=['Leave-One-Out', 'K-Fold'],
+        description='Cross Validation Method:',
+        style={'description_width': 'initial'}
+    )
+
+    fold_widget = widgets.BoundedIntText(
+        value=5, min=2, max=20,
+        description='Number of folds:',
+        style={'description_width': 'initial'}
+    )
+
+    cv_output = widgets.Output()
+
+    def update_cv_ui(change=None):
+        with cv_output:
+            cv_output.clear_output()
+            if cv_widget.value == 'K-Fold':
+                display(fold_widget)
+
+    cv_widget.observe(update_cv_ui, names='value')
+    update_cv_ui()
+
+    return uploader, k_widget, metric_widget, weights_widget, cv_widget, fold_widget, cv_output, update_cv_ui
+
+# Event handler that responds to button clicking
+def bind_run_button(run_button, uploader, k_widget, metric_widget, weights_widget,
+                    cv_widget, fold_widget, output, knn):
+    
+    def on_run_clicked(b):
+        with output:
+            output.clear_output()
+
+            k = k_widget.value
+            metric = metric_widget.value
+            weights = weights_widget.value
+            cv_method = cv_widget.value
+            n = 1 if cv_method == 'Leave-One-Out' else fold_widget.value
+
+            result = get_file_content(uploader)
+            if result is None:
+                return
+            X, y, file_name = result
+
+            knn.run_knn(X, y, k, metric, weights, n, file_name)
+
+    run_button.on_click(on_run_clicked)
+
 
 # Obtain classification results for cross validation
 def run_cross_validation(X, y_encoded, k, metric, weights, class_indices, n):
